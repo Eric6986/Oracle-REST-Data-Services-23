@@ -1,0 +1,185 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oracleords-deployment
+  labels:
+    app: oracleords
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oracleords
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: oracleords
+    spec:
+      imagePullSecrets:
+        - name: docker-registry
+      initContainers:
+        - name: wait-for-oracle
+          image: busybox:latest
+          imagePullPolicy: Always
+          command: ['sh', '-c', 'until nc -vz ${POD_SERVICE_NAME}.${POD_NAMESPACE} 1521; do echo "Waiting for oracle23c..."; sleep 3; done;']
+          env:
+            - name: POD_SERVICE_NAME
+              value: oracle23c-service
+            - name: POD_NAMESPACE
+              value: oracle23c
+        - name: wait-for-ords-initial
+          image: sin.ocir.io/***REMOVED***/oracleords:testing
+          imagePullPolicy: Always
+          env:
+            - name: ORACLE_ADMIN_USER
+              value: "SYS"
+            - name: ORACLE_SERVICE
+              value: "freepdb1"
+            - name: ORACLE_HOST
+              value: "oracle23c-service.oracle23c.svc.cluster.local"
+            - name: ORACLE_PORT
+              value: "1521"
+            - name: ORDS_USER
+              value: "ORDS_PUBLIC_USER"
+            - name: ORDS_PWD
+              value: "abc123"
+            - name: ORACLE_PWD
+              value: "abc123"
+            - name: ORDS_HTTPS_PORT
+              value: "8443"
+            - name: ORDS_HTTP_PORT
+              value: "8080"
+            - name: ORDS_CERT
+              value: "/etc/ords/keystore/test.der"
+            - name: ORDS_CERT_KEY
+              value: "/etc/ords/keystore/test-key.der"
+            - name: ORDS_INITIAL
+              value: "Yes"
+        - name: wait-for-oracle-user
+          image: sin.ocir.io/***REMOVED***/dbtools:1.0.1
+          imagePullPolicy: Always
+          command: ["/bin/sh","-c"]
+          args:
+            - sqlplus SYS/\"${ORACLE_PWD}\"@${ORACLE_HOST}:${ORACLE_PORT}/${ORACLE_SERVICE} as SYSDBA @usercreate.sql ${MONGO_USER_NAME^^} ${MONGO_USER_PWD}
+          env:
+            - name: ORACLE_PWD
+              value: "abc123"
+            - name: ORACLE_SERVICE
+              value: "freepdb1"
+            - name: ORACLE_HOST
+              value: "oracle23c-service.oracle23c.svc.cluster.local"
+            - name: ORACLE_PORT
+              value: "1521"
+            - name: MONGO_USER_NAME
+              value: "MONGO_TEST"
+            - name: MONGO_USER_PWD
+              value: "MyPassword1!"
+          volumeMounts:
+            - name: init-mongo
+              mountPath: /work/
+        - name: wait-for-ords-enable
+          image: ghcr.io/oracle-quickstart/oci-cloudnative/dbtools:1.0.1
+          imagePullPolicy: Always
+          command: ["/bin/sh","-c"]
+          args:
+            - sqlplus ${MONGO_USER_NAME}/\"${MONGO_USER_PWD}\"@${ORACLE_HOST}:${ORACLE_PORT}/${ORACLE_SERVICE} @enableords.sql
+          env:
+            - name: ORACLE_SERVICE
+              value: "freepdb1"
+            - name: ORACLE_HOST
+              value: "oracle23c-service.oracle23c.svc.cluster.local"
+            - name: ORACLE_PORT
+              value: "1521"
+            - name: MONGO_USER_NAME
+              value: "MONGO_TEST"
+            - name: MONGO_USER_PWD
+              value: "MyPassword1!"
+          volumeMounts:
+            - name: init-mongo
+              mountPath: /work/
+      containers:
+      - image: sin.ocir.io/***REMOVED***/oracleords:testing
+        env:
+        - name: ORACLE_ADMIN_USER
+          value: "SYS"
+        - name: ORACLE_SERVICE
+          value: "freepdb1"
+        - name: ORACLE_HOST
+          value: "oracle23c-service.oracle23c.svc.cluster.local"
+        - name: ORACLE_PORT
+          value: "1521"
+        - name: ORDS_USER
+          value: "ORDS_PUBLIC_USER"
+        - name: ORDS_PWD
+          value: "abc123"
+        - name: ORACLE_PWD
+          value: "abc123"
+        - name: ORDS_HTTPS_PORT
+          value: "8443"
+        - name: ORDS_HTTP_PORT
+          value: "8080"
+        - name: ORDS_CERT
+          value: "/etc/ords/keystore/test.der"
+        - name: ORDS_CERT_KEY
+          value: "/etc/ords/keystore/test-key.der"
+        - name: ORDS_INITIAL
+          value: ""
+        name: oracleords
+        ports:
+        - containerPort: 8080
+          name: oracleordshttp
+        - containerPort: 8443
+          name: oracleordshttps
+        - containerPort: 27017
+          name: oracleordsmongo
+        volumeMounts:
+          - name: ords-config-cert
+            mountPath: "/etc/ords/keystore/test.der"
+            subPath: test.der
+            readOnly: true
+          - name: ords-config-cert-key
+            mountPath: "/etc/ords/keystore/test-key.der"
+            subPath: test-key.der
+            readOnly: true
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "1G"
+            cpu: "1"
+          limits:
+            memory: "1G"
+            cpu: "1"
+      volumes:
+      - name: ords-config-cert
+        secret:
+          secretName: ords-config-cert
+      - name: ords-config-cert-key
+        secret:
+          secretName: ords-config-cert-key
+      - name: init-mongo
+        configMap:
+          name: oracleords-init
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: oracleords-service
+  annotations:
+    oci-network-load-balancer.oraclecloud.com/security-list-management-mode: "All"
+    oci.oraclecloud.com/load-balancer-type: nlb
+spec:
+  selector:
+    app: oracleords
+  type: LoadBalancer
+  ports:
+  - name: oracleords
+    protocol: TCP
+    port: 27017
+    targetPort: oracleordsmongo
+  externalTrafficPolicy: Local
+  sessionAffinity: None
+

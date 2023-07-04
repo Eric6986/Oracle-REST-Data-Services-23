@@ -1,0 +1,70 @@
+#
+# Copyright (c) 2023, Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-deployment
+  {{- include "oracle-db-labels" . | indent 2 }}
+spec:
+  replicas: {{ default 1 .Values.replicas }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 100
+      maxUnavailable: 100
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+    spec:
+      terminationGracePeriodSeconds: 150
+    {{- if .Values.imagePullSecrets}}
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecrets }}
+    {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ default "IfNotPresent" .Values.imagePullPolicy | quote }}
+          ports:
+            - name: oracle23c
+              containerPort: 1521
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: 1521
+            initialDelaySeconds: 250
+            timeoutSeconds: 2
+            periodSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: 1521
+            initialDelaySeconds: 250
+            timeoutSeconds: 2
+            periodSeconds: 3
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.persistence }}
+          volumeMounts:
+            - mountPath: /opt/oracle/oradata
+              name: datamount
+          {{- end }}
+      {{- include "oracle-db-env" . | indent 10 }}
+      {{- if .Values.persistence }}
+      volumes:
+        - name: datamount
+          persistentVolumeClaim:
+            claimName: {{ .Chart.Name }}-pvc
+      {{- end }}

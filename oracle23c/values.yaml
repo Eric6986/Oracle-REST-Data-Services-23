@@ -1,0 +1,81 @@
+#
+# Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+#
+
+# Default values for oracle-db. Please check README for more information about below parameters
+global:
+  ##This parameter changes the ORACLE_SID of the database. The default value is set to ORCLCDB.
+  oracle_sid: FREE
+
+  ##This parameter modifies the name of the PDB. The default value is set to ORCLPDB1.
+  oracle_pdb: FREEPDB1
+
+  ## The Oracle Database SYS, SYSTEM and PDB_ADMIN password. Defaults to a randomly generated password
+  oracle_pwd:
+
+  ## The Oracle REST Data service user password. Defaults to a randomly generated password
+  ords_pwd:
+
+## The character set to use when creating the database. Defaults to AL32UTF8
+oracle_characterset: AL32UTF8
+
+## The database edition (default: enterprise)
+oracle_edition: standard
+
+## Enable archive log mode when creating the database
+enable_archivelog: false
+
+podSecurityContext:
+  runAsUser: 54321
+  fsGroup: 54321
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+## Enable persistence using Persistent Volume Claims
+## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+## Override 'persistence' to 'null' using '--set' option, if persistence is not desired (e.g. using the extended image with 'prebuiltdb' extension)
+persistence:
+  ## Oracle Database data Persistent Volume Storage Class, nfs or block ("oci", "oci-bv")
+  storageClass: "oci-bv"
+  size: 50Gi
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 1
+    memory: 4G
+  requests:
+    cpu: 1
+    memory: 4G
+
+## Deploy multiple replicas for fast fail over
+## If 'persistence' is 'null' then fast fail over will not happen even if replicas>1 (as no persistence)
+replicas: 1
+
+## deploy LoadBalancer service
+loadBalService: false
+
+## name of image
+image:
+  repository: gvenzl/oracle-free
+  # Overrides the image tag whose default is the chart version.
+  tag: "23.2-full"
+
+## image pull policy, IfNotPresent or Always
+imagePullPolicy: Always
+
+## container registry login/password
+imagePullSecrets:
+
+oracleords:
+  enabled: true

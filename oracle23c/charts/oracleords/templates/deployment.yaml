@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oracleords-deployment
+  labels:
+    {{- include "oracleords.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "oracleords.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "oracleords.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: wait-for-oracle
+          image: busybox:latest
+          imagePullPolicy: Always
+          command: ['sh', '-c', 'until nc -vz ${POD_SERVICE_NAME}.${POD_NAMESPACE} 1521; do echo "Waiting for oracle23c..."; sleep 3; done;']
+          env:
+            - name: POD_SERVICE_NAME
+              value: {{ .Release.Name }}-service
+            - name: POD_NAMESPACE
+              value: {{ .Release.Namespace }}
+        - name: wait-for-ords-initial
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
+          env:
+            - name: ORDS_INITIAL
+              value: "Yes"
+            {{- include "oracle-ords-env" . | indent 12 }}
+          volumeMounts:
+            - name: ords-config-cert
+              mountPath: "/etc/ords/keystore"
+              readOnly: true
+        - name: wait-for-oracle-user
+          image: "{{ .Values.dbtools.repository }}:{{ .Values.dbtools.tag }}"
+          imagePullPolicy: Always
+          command: ["/bin/sh","-c"]
+          args:
+            - sqlplus SYS/\"${ORACLE_PWD}\"@${ORACLE_HOST}:${ORACLE_PORT}/${ORACLE_SERVICE} as SYSDBA @usercreate.sql ${MONGO_USER_NAME^^} ${MONGO_USER_PWD}
+          {{- include "oracle-dbtool-env" . | indent 10 }}
+          volumeMounts:
+            - name: init-mongo
+              mountPath: /work/
+        - name: wait-for-ords-enable
+          image: "{{ .Values.dbtools.repository }}:{{ .Values.dbtools.tag }}"
+          imagePullPolicy: Always
+          command: ["/bin/sh","-c"]
+          args:
+            - sqlplus ${MONGO_USER_NAME}/\"${MONGO_USER_PWD}\"@${ORACLE_HOST}:${ORACLE_PORT}/${ORACLE_SERVICE} @enableords.sql
+          {{- include "oracle-dbtool-env" . | indent 10 }}
+          volumeMounts:
+            - name: init-mongo
+              mountPath: /work/
+      containers:
+      - image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        env:
+          - name: ORDS_INITIAL
+            value: "No"
+          {{- include "oracle-ords-env" . | indent 10 }}
+        name: {{ .Chart.Name }}
+        ports:
+        - containerPort: 8080
+          name: oracleordshttp
+        - containerPort: 8443
+          name: oracleordshttps
+        - containerPort: {{ .Values.service.port }}
+          name: oracleordsmongo
+        securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+        volumeMounts:
+          - name: ords-config-cert
+            mountPath: "/etc/ords/keystore"
+            readOnly: true
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 90
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 90
+          periodSeconds: 10
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: ords-config-cert
+        secret:
+          secretName: ords-config-cert
+      - name: init-mongo
+        configMap:
+          name: {{ include (printf "%s.fullname" .Chart.Name) . }}-init
+          items:
+          - key: usercreate.sql
+            path: usercreate.sql
+          - key: enableords.sql
+            path: enableords.sql

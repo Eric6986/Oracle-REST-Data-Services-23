@@ -79,3 +79,6 @@ imagePullSecrets:
 
 oracleords:
   enabled: true
+
+student-api:
+  enabled: true

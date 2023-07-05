@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "oracleords.fullname" . }}
+  name: {{ include "oracleords.name" . }}-service
   labels:
     {{- include "oracleords.labels" . | nindent 4 }}
   {{- if .Values.loadBalService }}

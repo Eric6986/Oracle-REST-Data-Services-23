@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-deployment
+  labels:
+    {{- include "student-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "student-api.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "student-api.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: wait-for-ords-api
+          image: busybox:latest
+          imagePullPolicy: Always
+          command: ['sh', '-c', 'until nc -vz ${POD_SERVICE_NAME}.${POD_NAMESPACE} 27017; do echo "Waiting for ords mongo api..."; sleep 3; done;']
+          env:
+            - name: POD_SERVICE_NAME
+              value: oracleords-service
+            - name: POD_NAMESPACE
+              value: {{ .Release.Namespace }}
+      hostAliases:
+      - hostnames:
+        - "my-mongodb-0.my-mongodb-svc.mongodb.svc.cluster.local"
+        ip: "129.150.51.29"
+      containers:
+      - image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        env:
+          - name: KEY_FILE_PATH
+            value: "/opt/api/keystore/test.der"
+          - name: SPRING_PROFILES_ACTIVE
+            value: {{ .Values.env.springProfilesActive }}
+          - name: SPRING_CONFIG_LOCATION
+            value: {{ .Values.env.springConfigLocation }}
+          - name: JAVA_OPTS
+            value: {{ .Values.env.javaOpts }}
+        name: {{ .Chart.Name }}
+        ports:
+        - containerPort: {{ .Values.service.port }}
+          name: {{ .Chart.Name }}
+        securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+        volumeMounts:
+          - name: {{ .Chart.Name }}-cert
+            mountPath: "/opt/api/keystore"
+            readOnly: true
+          - name: {{ .Chart.Name }}-config
+            mountPath: /config
+            readOnly: true
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: {{ .Chart.Name }}-cert
+        secret:
+          secretName: ords-config-cert
+      - name: {{ .Chart.Name }}-config
+        configMap:
+          name: {{ .Chart.Name }}-config
+

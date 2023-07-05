@@ -50,7 +50,7 @@ securityContext: {}
   # runAsUser: 1000
 
 ## deploy LoadBalancer service
-loadBalService: true
+loadBalService: false
 
 service:
   port: 27017

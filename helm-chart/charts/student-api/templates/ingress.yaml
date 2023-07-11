@@ -1,0 +1,48 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Chart.Name }}-ing
+  labels:
+{{ include "student-api.labels" . | indent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    {{- if .Values.ingress.tls }}
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: {{ .Chart.Name }}-{{ .Values.ingress.clusterIssuer }}
+    cert-manager.io/acme-challenge-type: http01
+    {{- end }}
+spec:
+  rules:
+    {{- if .Values.ingress.hosts }}
+    {{- range $host := .Values.ingress.hosts }}
+    - host: {{ $host }}
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            # intentionally w/o .Release.Name for metrics workshop
+            service:
+              name: {{ include "student-api.name" . }}-service
+              port:
+                number: 8080
+    {{- end -}}
+    {{ else }}
+    - http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            # intentionally w/o .Release.Name for metrics workshop
+            service:
+              name: {{ include "student-api.name" . }}-service
+              port:
+                number: 8080
+    {{- end -}}
+  {{- if .Values.ingress.tls }}
+  tls:
+    - secretName: {{ .Chart.Name }}-{{ .Values.ingress.clusterIssuer }}-tls
+      hosts: {{- toYaml .Values.ingress.hosts | nindent 6 }}
+  {{- end -}}
+{{- end -}}

@@ -82,3 +82,6 @@ oracleords:
 
 student-api:
   enabled: true
+
+mongodb:
+  enabled: true

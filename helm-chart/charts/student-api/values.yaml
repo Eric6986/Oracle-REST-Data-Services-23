@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: sin.ocir.io/***REMOVED***/student-api
-  tag: latest
+  tag: "0710"
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
 
@@ -73,3 +73,17 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+ingress:
+  enabled: true
+  #hosts:
+  #  - www.mydemoapp.com
+
+  # This controls the cluster issuer what's used in Ingress
+  #clusterIssuer: letsencrypt-prod
+
+  # Used for ACME registration (if TLS is set)
+  #email: "no-reply@mydemoapp.com"
+
+  # If TLS is provided, cert-manager needs to be installed.
+  #tls: true

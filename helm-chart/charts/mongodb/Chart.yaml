@@ -1,8 +1,6 @@
-# Copyright (c) 2020, Oracle Corporation and/or its affiliates.
-# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
 apiVersion: v2
-name: oracle23c
-description: Oracle Database Server
+name: mongodb
+description: mongodb_community
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -13,24 +11,12 @@ description: Oracle Database Server
 # a dependency of application charts to inject those utilities and functions into the rendering
 # pipeline. Library charts do not define any templates and therefore cannot be deployed.
 
-
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.1.0
+version: 6.0.5
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-
-dependencies:
-- name: oracleords
-  version: 0.1.0
-  condition: oracleords.enabled
-- name: student-api
-  version: 0.1.0
-  condition: student-api.enabled
-- name: mongodb
-  version: 6.0.5
-  condition: mongodb.enabled

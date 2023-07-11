@@ -28,16 +28,23 @@ spec:
         - name: wait-for-ords-api
           image: busybox:latest
           imagePullPolicy: Always
-          command: ['sh', '-c', 'until nc -vz ${POD_SERVICE_NAME}.${POD_NAMESPACE} 27017; do echo "Waiting for ords mongo api..."; sleep 3; done;']
+          command: ['sh', '-c', 'until nc -vz ${POD_SERVICE_NAME}.${POD_NAMESPACE} 27017; do echo "Waiting for ords mongoDB api..."; sleep 3; done;']
           env:
             - name: POD_SERVICE_NAME
               value: oracleords-service
             - name: POD_NAMESPACE
               value: {{ .Release.Namespace }}
-      hostAliases:
-      - hostnames:
-        - "my-mongodb-0.my-mongodb-svc.mongodb.svc.cluster.local"
-        ip: "129.150.51.29"
+        - name: wait-for-mongodb
+          image: busybox:latest
+          imagePullPolicy: Always
+          command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_SERVICE_NAME}.${POD_NAMESPACE} 27017; do echo "Waiting for testing mongoDB ..."; sleep 3; done;']
+          env:
+            - name: POD_NAME
+              value: example-mongodb-0
+            - name: POD_SERVICE_NAME
+              value: example-mongodb-svc
+            - name: POD_NAMESPACE
+              value: {{ .Release.Namespace }}
       containers:
       - image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         env:

@@ -7,9 +7,10 @@ spring:
   server:
     port: 8080
   data:
-    mongodb:
+    ordsdb:
       uri: mongodb://mongo_test:MyPassword1!@oracleords-service.oracle23c.svc.cluster.local:27017/mongo_test?authMechanism=PLAIN&authSource=$external&ssl=true&retryWrites=false&loadBalanced=true
-      #uri: mongodb://mongo_test:MyPassword1!@my-mongodb-0.my-mongodb-svc.mongodb.svc.cluster.local:27017/mongo_test?authMechanism=SCRAM-SHA-256&ssl=true&retryWrites=false
+    testdb:
+      uri: mongodb://mongo_test:MyPassword1!@example-mongodb-0.example-mongodb-svc.oracle23c.svc.cluster.local:27017/mongo_test?authMechanism=SCRAM-SHA-256&ssl=false
 logging:
   level:
     com:

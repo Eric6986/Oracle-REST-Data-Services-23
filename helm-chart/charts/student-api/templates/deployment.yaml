@@ -40,22 +40,28 @@ spec:
           command: ['sh', '-c', 'until nc -vz ${POD_NAME}.${POD_SERVICE_NAME}.${POD_NAMESPACE} 27017; do echo "Waiting for testing mongoDB ..."; sleep 3; done;']
           env:
             - name: POD_NAME
-              value: example-mongodb-0
+              value: mongodb-replica-set-0
             - name: POD_SERVICE_NAME
-              value: example-mongodb-svc
+              value: mongodb-replica-set-svc
             - name: POD_NAMESPACE
               value: {{ .Release.Namespace }}
       containers:
       - image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         env:
-          - name: KEY_FILE_PATH
-            value: "/opt/api/keystore/test.der"
+          - name: ORDS_KEY_FILE_PATH
+            value: "/opt/api/ords_keystore/test.der"
+          - name: MONGODB_KEY_FILE_PATH
+            value: "/opt/api/mongodb_keystore/tls.crt"
           - name: SPRING_PROFILES_ACTIVE
             value: {{ .Values.env.springProfilesActive }}
           - name: SPRING_CONFIG_LOCATION
             value: {{ .Values.env.springConfigLocation }}
           - name: JAVA_OPTS
             value: {{ .Values.env.javaOpts }}
+          - name: ORDS_DNS
+            value: {{ .Values.env.ordsDNS }}
+          - name: MONGODB_DNS
+            value: {{ .Values.env.mongodbDNS }}
         name: {{ .Chart.Name }}
         ports:
         - containerPort: {{ .Values.service.port }}
@@ -63,8 +69,11 @@ spec:
         securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
         volumeMounts:
-          - name: {{ .Chart.Name }}-cert
-            mountPath: "/opt/api/keystore"
+          - name: ords-config-cert
+            mountPath: "/opt/api/ords_keystore"
+            readOnly: true
+          - name: mongodb-tls
+            mountPath: "/opt/api/mongodb_keystore"
             readOnly: true
           - name: {{ .Chart.Name }}-config
             mountPath: /config
@@ -95,9 +104,12 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-      - name: {{ .Chart.Name }}-cert
+      - name: ords-config-cert
         secret:
           secretName: ords-config-cert
+      - name: mongodb-tls
+        secret:
+          secretName: tls-certificate
       - name: {{ .Chart.Name }}-config
         configMap:
           name: {{ .Chart.Name }}-config

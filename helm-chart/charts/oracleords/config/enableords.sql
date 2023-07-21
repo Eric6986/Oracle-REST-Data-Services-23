@@ -6,21 +6,21 @@ SET VERIFY OFF;
 BEGIN
 
     BEGIN
-	    -- Schema User Creation
-	    DBMS_OUTPUT.PUT_LINE ('** Schema enable steps - &_DATE');
-	    ORDS.ENABLE_SCHEMA;
+	      -- Schema User Creation
+	      DBMS_OUTPUT.PUT_LINE ('** Schema enable steps - &_DATE');
+	      ORDS.ENABLE_SCHEMA;
     END;
 
     BEGIN
         -- Testing Schema Creation
         -- Relational model
-		EXECUTE IMMEDIATE 'DROP VIEW IF EXISTS student_dv';
-		EXECUTE IMMEDIATE 'DROP VIEW IF EXISTS student_schedule';
-		EXECUTE IMMEDIATE 'DROP VIEW IF EXISTS teacher_schedule';
-		EXECUTE IMMEDIATE 'DROP TABLE IF EXISTS student_course purge';
-		EXECUTE IMMEDIATE 'DROP TABLE IF EXISTS student purge';
-		EXECUTE IMMEDIATE 'DROP TABLE IF EXISTS course purge';
-		EXECUTE IMMEDIATE 'DROP TABLE IF EXISTS teacher purge';
+		    EXECUTE IMMEDIATE 'DROP VIEW IF EXISTS student_dv';
+		    EXECUTE IMMEDIATE 'DROP VIEW IF EXISTS student_schedule';
+		    EXECUTE IMMEDIATE 'DROP VIEW IF EXISTS teacher_schedule';
+		    EXECUTE IMMEDIATE 'DROP TABLE IF EXISTS student_course purge';
+		    EXECUTE IMMEDIATE 'DROP TABLE IF EXISTS student purge';
+		    EXECUTE IMMEDIATE 'DROP TABLE IF EXISTS course purge';
+		    EXECUTE IMMEDIATE 'DROP TABLE IF EXISTS teacher purge';
 
         -- Students
         EXECUTE IMMEDIATE 'CREATE TABLE student (id NUMBER PRIMARY KEY, name VARCHAR2(128) NOT NULL, info JSON)';
@@ -40,7 +40,7 @@ BEGIN
         
         EXECUTE IMMEDIATE 'INSERT INTO course (id,name,room,time,tid) VALUES (12,''Math 101'',''A102'',''14:00'',1), (15,''Algorithms'',''A104'',''11:00'',2), (16,''Data Structures'',''B101'',''9:00'',2), (17,''Science 102'',''B405'',''16:00'',2)';
     
-		EXECUTE IMMEDIATE 'CREATE TABLE student_course (id NUMBER PRIMARY KEY, sid NUMBER NOT NULL, cid NUMBER NOT NULL, CONSTRAINT fk_sc_student FOREIGN KEY (sid) REFERENCES student(id), CONSTRAINT fk_sc_course foreign key (cid) references course(id))';
+		    EXECUTE IMMEDIATE 'CREATE TABLE student_course (id NUMBER PRIMARY KEY, sid NUMBER NOT NULL, cid NUMBER NOT NULL, CONSTRAINT fk_sc_student FOREIGN KEY (sid) REFERENCES student(id), CONSTRAINT fk_sc_course foreign key (cid) references course(id))';
         
         EXECUTE IMMEDIATE 'CREATE INDEX i_sc_student ON student_course(sid)';
         
@@ -66,7 +66,7 @@ BEGIN
           } ]
         }';
 
-		EXECUTE IMMEDIATE 'CREATE OR REPLACE JSON DUALITY VIEW teacher_schedule AS
+		    EXECUTE IMMEDIATE 'CREATE OR REPLACE JSON DUALITY VIEW teacher_schedule AS
         teacher @insert @update @delete {
           _id     : id
           teacher  : name
@@ -86,7 +86,7 @@ BEGIN
           } ]
         }';
 
-	END;
+	  END;
 
 
     DECLARE col soda_collection_t;

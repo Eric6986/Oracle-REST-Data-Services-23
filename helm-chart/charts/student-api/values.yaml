@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: sin.ocir.io/***REMOVED***/student-api
-  tag: "0710"
+  tag: latest
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
 
@@ -44,8 +44,6 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
-## deploy LoadBalancer service
-loadBalService: true
 
 service:
   type: TCP
@@ -55,6 +53,8 @@ env:
   javaOpts: -Xms32m -Xmx150m -XX:MaxRAM=150m -XX:+UnlockExperimentalVMOptions -XX:+UseZGC
   springProfilesActive: dev
   springConfigLocation: /config/
+  ordsDNS: oracleords-service.oracle23c.svc.cluster.local
+  mongodbDNS: mongodb-replica-set-0.mongodb-replica-set-svc.oracle23c.svc.cluster.local
 
 resources:
   # We usually recommend not to specify default resources and to leave this as a conscious

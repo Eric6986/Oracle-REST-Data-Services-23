@@ -31,6 +31,6 @@ dependencies:
 - name: student-api
   version: 0.1.0
   condition: student-api.enabled
-- name: mongodb
-  version: 6.0.5
-  condition: mongodb.enabled
+- name: mongodb-community-operator
+  version: 0.8.0
+  condition: mongodb-community-operator.enabled

@@ -83,5 +83,5 @@ oracleords:
 student-api:
   enabled: true
 
-mongodb:
+mongodb-community-operator:
   enabled: true

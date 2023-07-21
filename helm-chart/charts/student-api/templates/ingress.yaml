@@ -6,7 +6,7 @@ metadata:
   labels:
 {{ include "student-api.labels" . | indent 4 }}
   annotations:
-    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.class: "nginx"
     {{- if .Values.ingress.tls }}
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     cert-manager.io/cluster-issuer: {{ .Chart.Name }}-{{ .Values.ingress.clusterIssuer }}
@@ -24,7 +24,7 @@ spec:
           backend:
             # intentionally w/o .Release.Name for metrics workshop
             service:
-              name: {{ include "student-api.name" . }}-service
+              name: {{ $.Chart.Name }}-service
               port:
                 number: 8080
     {{- end -}}
@@ -36,7 +36,7 @@ spec:
           backend:
             # intentionally w/o .Release.Name for metrics workshop
             service:
-              name: {{ include "student-api.name" . }}-service
+              name: {{ $.Chart.Name }}-service
               port:
                 number: 8080
     {{- end -}}

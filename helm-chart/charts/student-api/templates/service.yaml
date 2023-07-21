@@ -4,16 +4,8 @@ metadata:
   name:  {{ include "student-api.name" . }}-service
   labels:
     {{- include "student-api.labels" . | nindent 4 }}
-  {{- if .Values.loadBalService }}
-  annotations:
-    oci.oraclecloud.com/load-balancer-type: lb
-  {{- end }}
 spec:
-{{- if .Values.loadBalService }}
-  type: LoadBalancer
-{{- else}}
-  type: NodePort
-{{- end }}
+  type: ClusterIP
   ports:
     - name: {{ .Chart.Name }}
       protocol: {{ .Values.service.type }}

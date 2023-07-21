@@ -19,10 +19,10 @@ imagePullSecrets:
  - name: docker-registry
 
 imageCredentials:
-  registry: 
-  username: 
-  password: 
-  email: 
+  registry: sin.ocir.io
+  username: ***REMOVED***/oracleidentitycloudservice/***REMOVED***
+  password: ***REMOVED***
+  email: ***REMOVED***
 
 nameOverride: ""
 fullnameOverride: ""

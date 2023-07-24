@@ -1,0 +1,52 @@
+---
+# cert-manager resources
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: tls-selfsigned-issuer-ords
+  namespace: {{ .Release.Namespace }}
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tls-selfsigned-ca-ords
+  namespace: {{ .Release.Namespace }}
+spec:
+  isCA: true
+  commonName: "{{ .Chart.Name }}-service.{{ .Release.Namespace }}.svc.cluster.local"
+  dnsNames:
+    - "{{ .Chart.Name }}-service.{{ .Release.Namespace }}.svc.cluster.local"
+  secretName: {{ .Values.tls.caCertificateSecretRef }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: tls-selfsigned-issuer-ords
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: tls-ca-issuer-ords
+  namespace: {{ .Release.Namespace }}
+spec:
+  ca:
+    secretName: {{ .Values.tls.caCertificateSecretRef }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cert-manager-tls-certificate-ords
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: {{ .Values.tls.certificateKeySecretRef }}
+  issuerRef:
+    name: tls-ca-issuer-ords
+    kind: Issuer
+  duration: {{ .Values.tls.certManager.certDuration | default "8760h" }}   # default to 365 days
+  renewBefore: {{ .Values.tls.certManager.renewCertBefore | default "720h" }} # default to 30 days
+  commonName: "{{ .Chart.Name }}-service.{{ .Release.Namespace }}.svc.cluster.local"
+  dnsNames:
+    - "{{ .Chart.Name }}-service.{{ .Release.Namespace }}.svc.cluster.local"

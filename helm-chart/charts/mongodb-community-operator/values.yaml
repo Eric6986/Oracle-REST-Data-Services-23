@@ -1,5 +1,8 @@
 ## Reference to one or more secrets to be used when pulling images
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+## Copy from https://github.com/mongodb/helm-charts/tree/main/charts/community-operator.
+## Since the latest user add function not include yet. Temporary copt the source from above link.
+
 imagePullSecrets: []
 # - name: "image-pull-secret"
 

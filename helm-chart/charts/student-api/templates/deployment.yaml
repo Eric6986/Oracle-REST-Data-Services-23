@@ -49,7 +49,7 @@ spec:
       - image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         env:
           - name: ORDS_KEY_FILE_PATH
-            value: "/opt/api/ords_keystore/test.der"
+            value: "/opt/api/ords_keystore/tls.crt"
           - name: MONGODB_KEY_FILE_PATH
             value: "/opt/api/mongodb_keystore/tls.crt"
           - name: SPRING_PROFILES_ACTIVE
@@ -106,7 +106,7 @@ spec:
       volumes:
       - name: ords-config-cert
         secret:
-          secretName: ords-config-cert
+          secretName: tls-certificate-ords
       - name: mongodb-tls
         secret:
           secretName: tls-certificate

@@ -113,7 +113,7 @@ spec:
       volumes:
       - name: ords-config-cert
         secret:
-          secretName: ords-config-cert
+          secretName: tls-certificate-ords
       - name: init-mongo
         configMap:
           name: {{ include (printf "%s.fullname" .Chart.Name) . }}-init

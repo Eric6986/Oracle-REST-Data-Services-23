@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: sin.ocir.io/***REMOVED***/student-api
-  tag: latest
+  repository: sin.ocir.io/xxxxx/oracleords #"{Your docker registry}", example: sin.ocir.io/xxxxx/oracleords
+  tag: "latest" # Build image from Oracle-REST-Data-Services-23/Dockerfile
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
 
@@ -14,10 +14,10 @@ imagePullSecrets:
  - name: docker-registry
 
 imageCredentials:
-  registry: 
-  username: 
-  password: 
-  email: 
+  registry: ""
+  username: ""
+  password: ""
+  email: ""
 
 nameOverride: ""
 fullnameOverride: ""

@@ -5,16 +5,17 @@ USER root
 RUN dnf -y install wget && \
     dnf -y install unzip && \
     cd /tmp && \
-    wget https://oca.opensource.oracle.com/gds/GRAALVM_EE_JAVA17_22_3_2/graalvm-ee-java17-linux-amd64-22.3.2.tar.gz && \
-    tar -xzf graalvm-ee-java17-linux-amd64-22.3.2.tar.gz && \
-    mv graalvm-ee-java17-22.3.2/ /opt/graalvm-java17/
+    wget https://builds.openlogic.com/downloadJDK/openlogic-openjdk-jre/17.0.5+8/openlogic-openjdk-jre-17.0.5+8-linux-x64.tar.gz && \
+    tar -xzf openlogic-openjdk-jre-17.0.5+8-linux-x64.tar.gz && \
+    mv openlogic-openjdk-jre-17.0.5+8-linux-x64 /opt/graalvm-java17/
 
 ENV JAVA_HOME=/opt/graalvm-java17
 ENV PATH="${PATH}:${JAVA_HOME}/bin"
 
 RUN dnf -y install oracle-instantclient-release-el8 && \
     dnf -y install oracle-instantclient-basic && \
-    dnf -y install oracle-instantclient-sqlplus
+    dnf -y install oracle-instantclient-sqlplus && \
+    dnf -y install openssl
 
 RUN mkdir -p /tmp/ords && \
     cd /tmp/ords && \

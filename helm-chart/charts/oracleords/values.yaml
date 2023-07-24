@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: sin.ocir.io/***REMOVED***/oracleords
-  tag: latest
+  repository: sin.ocir.io/xxxxx/oracleords #"{Your docker registry}", example: sin.ocir.io/xxxxx/oracleords
+  tag: "latest" # Build image from Oracle-REST-Data-Services-23/Dockerfile
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
 
@@ -19,10 +19,10 @@ imagePullSecrets:
  - name: docker-registry
 
 imageCredentials:
-  registry: sin.ocir.io
-  username: ***REMOVED***/oracleidentitycloudservice/***REMOVED***
-  password: ***REMOVED***
-  email: ***REMOVED***
+  registry: ""
+  username: ""
+  password: ""
+  email: ""
 
 nameOverride: ""
 fullnameOverride: ""
@@ -72,3 +72,10 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+tls:
+  certificateKeySecretRef: tls-certificate-ords
+  caCertificateSecretRef: tls-ca-key-pair-ords
+  certManager:
+    certDuration: 8760h   # 365 days
+    renewCertBefore: 720h   # 30 days

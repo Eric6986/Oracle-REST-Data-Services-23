@@ -89,9 +89,11 @@ Create the name of the service account to use
 - name: ORDS_HTTP_PORT
   value: "8080"
 - name: ORDS_CERT
-  value: "/etc/ords/keystore/test.der"
+  value: "/etc/ords/keystore/tls.crt"
+- name: ORDS_CONFIG
+  value: "/etc/ords/config"
 - name: ORDS_CERT_KEY
-  value: "/etc/ords/keystore/test-key.der"
+  value: "/etc/ords/keystore/tls.key"
 {{- end -}}
 
 {{/* Expand DBTool Variables using a template */}}

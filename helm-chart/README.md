@@ -2,7 +2,7 @@
 [Oracle](http://www.oracle.com) Database 23c Free—Developer Release is the same, powerful Oracle Database that businesses throughout the world rely on. It offers a full-featured experience and is packaged for ease of use and simple download—for free.
 
 ## Getting started
-A Helm chart is used for packaging the deployment yamls to simplify install in Kubernetes. Using [helm-charts/oracle-db](https://github.com/oracle/docker-images/tree/main/OracleDatabase/SingleInstance/helm-charts/oracle-db) as base and modified it for use with Oracle Database 23c Free - Developer Release. 
+A Helm chart is used for packaging the deployment yamls to simplify install in Kubernetes. Using [helm-charts/oracle-db](https://github.com/oracle/docker-images/tree/main/OracleDatabase/SingleInstance/helm-charts/oracle-db) as base and modified it for use with Oracle Database 23c Free - Developer Release. The detail setup please refer the page https://medium.com/@liana.lixandru/deploying-oracle-database-23c-free-developer-release-on-kubernetes-with-helm-4b2542566bea
 
 Clone the repo and execute the following command to generate oracle-db23c-free-1.0.0.tgz:
 
@@ -62,11 +62,11 @@ The following tables lists the configurable parameters of the Oracle  Database c
 | oracle_pwd                           | SYS, SYSTEM and PDB_ADMIN password         | Auto generated                                             |
 | oracle_characterset                  | The character set to use                   | AL32UTF8                                                   |
 | persistence.size                     | Size of persistence storage                | 100g                                                       |
-| persistence.storageClass             | Storage Class for PVC                      | oci-bv                                                           |
+| persistence.storageClass             | Storage Class for PVC                      | oci-bv                                                     |
 | loadBalService                       | Create a load balancer service instead of NodePort | false                                              |
-| image                                | Image to pull                              | container-registry.oracle.com/database/free:latest |
+| image                                | Image to pull                              | container-registry.oracle.com/database/free:latest         |
 | imagePullPolicy                      | Image pull policy                          | Always                                                     |
-| enable_archivelog                    | Set true to enable archive log mode when creating the database | false                                                      |
+| enable_archivelog                    | Set true to enable archive log mode when creating the database | false                                  |
 
 ORACLE_SID and ORACLE_PDB are not configurable for Oracle Database 23c Free - Developer Release.
 

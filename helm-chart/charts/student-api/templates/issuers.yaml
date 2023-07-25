@@ -3,9 +3,10 @@
 # 
 {{- if .Values.ingress.clusterIssuer }}
 apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
+kind: Issuer
 metadata:
   name: {{ .Chart.Name }}-{{ .Values.ingress.clusterIssuer }}
+  namespace: {{ .Release.Namespace }}
 spec:
   acme:
     # The ACME dev api URL
@@ -21,9 +22,10 @@ spec:
           class: nginx
 ---
 apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
+kind: Issuer
 metadata:
   name: {{ .Chart.Name }}-selfsigned
+  namespace: {{ .Release.Namespace }}
 spec:
   selfSigned: {}
 {{- end -}}
